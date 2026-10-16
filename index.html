@@ -1,1 +1,72 @@
-
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PERCUSSÃO TAKI VS</title>
+<meta name="theme-color" content="#ffcc00">
+<style>
+*{box-sizing:border-box} body{margin:0;background:#0a0a0a;color:#fff;font-family:system-ui}
+header{padding:18px;text-align:center;border-bottom:2px solid #ffcc00;background:#0a0a0a}
+h1{margin:0;font-size:20px;color:#ffcc00}
+.card{background:#161616;border:1px solid #222;border-radius:20px;margin:12px;padding:14px}
+.drop{border:2px dashed #ffcc00;border-radius:16px;padding:22px;text-align:center;background:#111}
+.btn{border:none;border-radius:100px;padding:12px 18px;font-weight:900}
+.btn-play{background:#ffcc00;color:#000;font-size:18px;width:100%;padding:18px}
+.btn-small{background:#222;color:#fff}
+.slider{width:100%;accent-color:#ffcc00;height:30px}
+.row{display:flex;justify-content:space-between;align-items:center}
+.badge{background:#222;padding:6px 10px;border-radius:100px;font-size:12px;border:1px solid #ffcc00;color:#ffcc00}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/tone@14.8.49/build/Tone.js"></script>
+</head>
+<body>
+<header><h1>🥁 PERCUSSÃO TAKI VS</h1><div style="opacity:.7;font-size:11px">OFFLINE • TAKI • BPM + PITCH</div></header>
+<div class="card">
+<div class="drop" onclick="document.getElementById('file').click()">
+<b>ARRASTE SEU LOOP</b><br><input type="file" id="file" accept="audio/*" hidden>
+<button class="btn btn-small">Escolher Arquivo</button>
+<div id="fileName" style="margin-top:8px;font-size:12px"></div>
+</div>
+</div>
+<div class="card">
+<div class="row"><span>BPM Original</span><input id="origBpm" type="number" value="90" style="width:70px;background:#000;color:#fff;border:1px solid #333;padding:6px;border-radius:8px"></div>
+<div style="margin-top:14px"><div class="row"><span>⏩ TEMPO</span><span class="badge" id="targetBpmLabel">90 BPM</span></div><input id="bpmSlider" class="slider" type="range" min="50" max="180" value="90"></div>
+<div style="margin-top:14px"><div class="row"><span>🎚️ PITCH</span><span class="badge" id="pitchLabel">0 semitons</span></div><input id="pitchSlider" class="slider" type="range" min="-12" max="12" value="0"></div>
+</div>
+<div class="card">
+<button id="playBtn" class="btn btn-play" onclick="togglePlay()">▶️ PLAY</button>
+<div style="display:flex;gap:8px;margin-top:10px">
+<button class="btn btn-small" style="flex:1" onclick="toggleLoop()" id="loopBtn">🔁 LOOP ON</button>
+<button class="btn btn-small" style="flex:1" onclick="toggleClick()">Clique: <span id="clickState">OFF</span></button>
+</div>
+<div id="status" style="margin-top:10px;font-size:12px;text-align:center;opacity:.7">PERCUSSÃO TAKI VS pronto</div>
+</div>
+<div class="card"><h3 style="font-size:14px">📦 Meus Loops Salvos</h3><div id="listaLoops">Nenhum ainda</div></div>
+<script>
+let grainPlayer=null, clickLoop=null, isPlaying=false, isLoop=true, isClick=false;
+const origBpmInput=document.getElementById('origBpm'), bpmSlider=document.getElementById('bpmSlider'), pitchSlider=document.getElementById('pitchSlider');
+bpmSlider.oninput=()=>{document.getElementById('targetBpmLabel').textContent=bpmSlider.value+' BPM'; updatePlayback();}
+pitchSlider.oninput=()=>{let v=parseInt(pitchSlider.value); document.getElementById('pitchLabel').textContent=(v>0?'+'+v:v)+' semitons'; updatePlayback();}
+origBpmInput.oninput=()=>updatePlayback();
+function updatePlayback(){if(!grainPlayer) return; grainPlayer.playbackRate=parseFloat(bpmSlider.value)/parseFloat(origBpmInput.value||90); grainPlayer.detune=parseInt(pitchSlider.value)*100; if(isClick) Tone.Transport.bpm.value=parseFloat(bpmSlider.value);}
+async function loadFile(file){
+ document.getElementById('fileName').textContent=file.name;
+ document.getElementById('status').textContent='⏳ Decodificando...';
+ await Tone.start();
+ let buf=await file.arrayBuffer();
+ let ctx=Tone.getContext().rawContext;
+ let audioBuffer=await ctx.decodeAudioData(buf.slice(0));
+ if(grainPlayer){grainPlayer.stop(); grainPlayer.dispose();}
+ grainPlayer=new Tone.GrainPlayer(audioBuffer); grainPlayer.loop=isLoop; grainPlayer.grainSize=0.1; grainPlayer.overlap=0.05; grainPlayer.toDestination(); updatePlayback();
+ document.getElementById('status').textContent='✅ '+file.name+' - TAKI VS';
+ let req=indexedDB.open('taki_vs',1); req.onupgradeneeded=e=>e.target.result.createObjectStore('loops');
+ req.onsuccess=e=>{let db=e.target.result; let tx=db.transaction('loops','readwrite'); tx.objectStore('loops').put(file,file.name);}
+}
+document.getElementById('file').onchange=e=>{if(e.target.files[0]) loadFile(e.target.files[0]);};
+window.togglePlay=async function(){await Tone.start(); if(!grainPlayer) return alert('Carrega um loop!'); if(isPlaying){grainPlayer.stop(); Tone.Transport.stop(); isPlaying=false; playBtn.textContent='▶️ PLAY';}else{grainPlayer.start(); if(isClick){Tone.Transport.bpm.value=parseInt(bpmSlider.value); Tone.Transport.start();} isPlaying=true; playBtn.textContent='⏸️ STOP';}};
+window.toggleLoop=function(){isLoop=!isLoop; if(grainPlayer) grainPlayer.loop=isLoop; loopBtn.textContent=isLoop?'🔁 LOOP ON':'🔁 LOOP OFF';};
+window.toggleClick=function(){isClick=!isClick; clickState.textContent=isClick?'ON':'OFF'; if(isClick){if(clickLoop) clickLoop.dispose(); let synth=new Tone.MembraneSynth().toDestination(); clickLoop=new Tone.Loop(t=>{synth.triggerAttackRelease('C2','8n',t);},'4n').start(0); Tone.Transport.bpm.value=parseInt(bpmSlider.value); if(isPlaying) Tone.Transport.start();}else{Tone.Transport.stop(); if(clickLoop) clickLoop.dispose();}};
+</script>
+</body>
+</html>
