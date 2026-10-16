@@ -3,70 +3,66 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>PERCUSSÃO TAKI VS</title>
+<title>PERCUSSÃO TAKI VS PRO</title>
 <meta name="theme-color" content="#ffcc00">
+<link rel="manifest" href="manifest.json">
 <style>
-*{box-sizing:border-box} body{margin:0;background:#0a0a0a;color:#fff;font-family:system-ui}
-header{padding:18px;text-align:center;border-bottom:2px solid #ffcc00;background:#0a0a0a}
-h1{margin:0;font-size:20px;color:#ffcc00}
-.card{background:#161616;border:1px solid #222;border-radius:20px;margin:12px;padding:14px}
-.drop{border:2px dashed #ffcc00;border-radius:16px;padding:22px;text-align:center;background:#111}
-.btn{border:none;border-radius:100px;padding:12px 18px;font-weight:900}
-.btn-play{background:#ffcc00;color:#000;font-size:18px;width:100%;padding:18px}
-.btn-small{background:#222;color:#fff}
-.slider{width:100%;accent-color:#ffcc00;height:30px}
-.row{display:flex;justify-content:space-between;align-items:center}
-.badge{background:#222;padding:6px 10px;border-radius:100px;font-size:12px;border:1px solid #ffcc00;color:#ffcc00}
+*{box-sizing:border-box;font-family:system-ui}body{margin:0;background:#0a0a0a;color:#fff}
+header{position:sticky;top:0;background:#0a0a0a;border-bottom:1px solid #ffcc00;padding:14px;display:flex;justify-content:space-between}
+.logo{font-weight:900;color:#ffcc00}.badge{border:1px solid #ffcc00;color:#ffcc00;padding:5px 10px;border-radius:100px;font-size:11px}
+.container{max-width:520px;margin:0 auto;padding:12px 12px 100px}
+.card{background:#161616;border:1px solid #222;border-radius:22px;padding:16px;margin-bottom:12px}
+.drop{border:1.5px dashed #ffcc00;border-radius:18px;padding:22px;text-align:center;background:rgba(255,204,0,.06)}
+.btn{border:none;border-radius:100px;padding:14px 18px;font-weight:900}
+.btn-primary{background:#ffcc00;color:#000;width:100%;font-size:18px}
+.btn-dark{background:#1d1d1d;color:#fff;border:1px solid #333}
+.btn-ghost{background:transparent;border:1px dashed #444;color:#ccc}
+.slider{width:100%;accent-color:#ffcc00;height:36px}
+.kv{display:flex;justify-content:space-between;margin:8px 0}
+.input{width:100%;background:#0e0e0e;border:1px solid #222;border-radius:12px;padding:12px;color:#fff}
+.loop-item{display:flex;justify-content:space-between;background:#111;padding:10px;border-radius:14px;margin:6px 0;border:1px solid #222}
+.install{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#ffcc00;color:#000;padding:14px 22px;border-radius:100px;font-weight:900;display:none}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/tone@14.8.49/build/Tone.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lamejs@1.2.0/lame.min.js"></script>
 </head>
 <body>
-<header><h1>🥁 PERCUSSÃO TAKI VS</h1><div style="opacity:.7;font-size:11px">OFFLINE • TAKI • BPM + PITCH</div></header>
-<div class="card">
-<div class="drop" onclick="document.getElementById('file').click()">
-<b>ARRASTE SEU LOOP</b><br><input type="file" id="file" accept="audio/*" hidden>
-<button class="btn btn-small">Escolher Arquivo</button>
-<div id="fileName" style="margin-top:8px;font-size:12px"></div>
+<header><div><div class="logo">🥁 PERCUSSÃO TAKI VS PRO</div><div style="font-size:11px;opacity:.6">OFFLINE • MP3 • BKP</div></div><span class="badge">TAKI</span></header>
+<div class="container">
+<div class="card"><div class="drop" onclick="file.click()"><div style="font-weight:900">ARRASTE SEU LOOP AQUI</div><input type="file" id="file" accept="audio/*" hidden><button class="btn btn-dark" style="margin-top:8px">Escolher Arquivo</button><div id="fileName" style="margin-top:8px;font-size:12px"></div></div></div>
+<div class="card"><div class="kv"><span>BPM Original</span><input id="origBpm" type="number" value="80" class="input" style="width:90px"></div><div class="kv"><span>⏩ Alvo</span><span class="badge" id="targetBpmLabel">80→80</span></div><input id="bpmSlider" class="slider" type="range" min="40" max="180" value="80"><div class="kv"><span>🎚️ PITCH</span><span class="badge" id="pitchLabel">0 st</span></div><input id="pitchSlider" class="slider" type="range" min="-12" max="12" value="0"><div class="kv"><button class="btn btn-dark" style="flex:1" id="loopBtn" onclick="toggleLoop()">🔁 LOOP ON</button><button class="btn btn-dark" style="flex:1;margin-left:8px" onclick="toggleClick()">🥢 <span id="clickState">OFF</span></button></div></div>
+<div class="card"><button id="playBtn" class="btn btn-primary" onclick="togglePlay()">▶️ PLAY</button><input id="nomeRitmo" class="input" placeholder="Ex: Pagode 80>65 TAKI" style="margin-top:10px"><div style="display:flex;gap:8px;margin-top:10px"><button class="btn btn-dark" style="flex:1" onclick="salvarRitmo()">💾 SALVAR</button><button class="btn btn-dark" style="flex:1" onclick="exportarMP3()">⬇️ MP3</button><button class="btn btn-dark" style="flex:1" onclick="exportarWAV()">WAV</button></div><div id="status" style="margin-top:10px;font-size:12px;text-align:center;opacity:.7">Pronto</div></div>
+<div class="card"><div class="kv"><b>📦 Meus Ritmos</b><small id="countLoops">0</small></div><div id="listaLoops">Nenhum</div></div>
+<div class="card"><b>🔐 BACKUP</b><div style="display:flex;gap:8px;margin-top:10px"><button class="btn btn-ghost" style="flex:1" onclick="exportarBKP()">📤 Exportar.taki</button><button class="btn btn-ghost" style="flex:1" onclick="bkpFile.click()">📥 Importar</button><input type="file" id="bkpFile" accept=".taki,.json" hidden></div></div>
 </div>
-</div>
-<div class="card">
-<div class="row"><span>BPM Original</span><input id="origBpm" type="number" value="90" style="width:70px;background:#000;color:#fff;border:1px solid #333;padding:6px;border-radius:8px"></div>
-<div style="margin-top:14px"><div class="row"><span>⏩ TEMPO</span><span class="badge" id="targetBpmLabel">90 BPM</span></div><input id="bpmSlider" class="slider" type="range" min="50" max="180" value="90"></div>
-<div style="margin-top:14px"><div class="row"><span>🎚️ PITCH</span><span class="badge" id="pitchLabel">0 semitons</span></div><input id="pitchSlider" class="slider" type="range" min="-12" max="12" value="0"></div>
-</div>
-<div class="card">
-<button id="playBtn" class="btn btn-play" onclick="togglePlay()">▶️ PLAY</button>
-<div style="display:flex;gap:8px;margin-top:10px">
-<button class="btn btn-small" style="flex:1" onclick="toggleLoop()" id="loopBtn">🔁 LOOP ON</button>
-<button class="btn btn-small" style="flex:1" onclick="toggleClick()">Clique: <span id="clickState">OFF</span></button>
-</div>
-<div id="status" style="margin-top:10px;font-size:12px;text-align:center;opacity:.7">PERCUSSÃO TAKI VS pronto</div>
-</div>
-<div class="card"><h3 style="font-size:14px">📦 Meus Loops Salvos</h3><div id="listaLoops">Nenhum ainda</div></div>
+<button id="btnInstall" class="install" onclick="instalar()">📲 INSTALAR TAKI VS</button>
 <script>
-let grainPlayer=null, clickLoop=null, isPlaying=false, isLoop=true, isClick=false;
-const origBpmInput=document.getElementById('origBpm'), bpmSlider=document.getElementById('bpmSlider'), pitchSlider=document.getElementById('pitchSlider');
-bpmSlider.oninput=()=>{document.getElementById('targetBpmLabel').textContent=bpmSlider.value+' BPM'; updatePlayback();}
-pitchSlider.oninput=()=>{let v=parseInt(pitchSlider.value); document.getElementById('pitchLabel').textContent=(v>0?'+'+v:v)+' semitons'; updatePlayback();}
-origBpmInput.oninput=()=>updatePlayback();
-function updatePlayback(){if(!grainPlayer) return; grainPlayer.playbackRate=parseFloat(bpmSlider.value)/parseFloat(origBpmInput.value||90); grainPlayer.detune=parseInt(pitchSlider.value)*100; if(isClick) Tone.Transport.bpm.value=parseFloat(bpmSlider.value);}
-async function loadFile(file){
- document.getElementById('fileName').textContent=file.name;
- document.getElementById('status').textContent='⏳ Decodificando...';
- await Tone.start();
- let buf=await file.arrayBuffer();
- let ctx=Tone.getContext().rawContext;
- let audioBuffer=await ctx.decodeAudioData(buf.slice(0));
- if(grainPlayer){grainPlayer.stop(); grainPlayer.dispose();}
- grainPlayer=new Tone.GrainPlayer(audioBuffer); grainPlayer.loop=isLoop; grainPlayer.grainSize=0.1; grainPlayer.overlap=0.05; grainPlayer.toDestination(); updatePlayback();
- document.getElementById('status').textContent='✅ '+file.name+' - TAKI VS';
- let req=indexedDB.open('taki_vs',1); req.onupgradeneeded=e=>e.target.result.createObjectStore('loops');
- req.onsuccess=e=>{let db=e.target.result; let tx=db.transaction('loops','readwrite'); tx.objectStore('loops').put(file,file.name);}
-}
-document.getElementById('file').onchange=e=>{if(e.target.files[0]) loadFile(e.target.files[0]);};
-window.togglePlay=async function(){await Tone.start(); if(!grainPlayer) return alert('Carrega um loop!'); if(isPlaying){grainPlayer.stop(); Tone.Transport.stop(); isPlaying=false; playBtn.textContent='▶️ PLAY';}else{grainPlayer.start(); if(isClick){Tone.Transport.bpm.value=parseInt(bpmSlider.value); Tone.Transport.start();} isPlaying=true; playBtn.textContent='⏸️ STOP';}};
-window.toggleLoop=function(){isLoop=!isLoop; if(grainPlayer) grainPlayer.loop=isLoop; loopBtn.textContent=isLoop?'🔁 LOOP ON':'🔁 LOOP OFF';};
-window.toggleClick=function(){isClick=!isClick; clickState.textContent=isClick?'ON':'OFF'; if(isClick){if(clickLoop) clickLoop.dispose(); let synth=new Tone.MembraneSynth().toDestination(); clickLoop=new Tone.Loop(t=>{synth.triggerAttackRelease('C2','8n',t);},'4n').start(0); Tone.Transport.bpm.value=parseInt(bpmSlider.value); if(isPlaying) Tone.Transport.start();}else{Tone.Transport.stop(); if(clickLoop) clickLoop.dispose();}};
+let audioBuffer=null,grainPlayer=null,clickLoop=null,isPlaying=false,isLoop=true,isClick=false,deferredPrompt=null;
+const origBpmInput=origBpm,bpmSlider=document.getElementById('bpmSlider'),pitchSlider=document.getElementById('pitchSlider');
+function atualizaLabels(){let o=parseFloat(origBpmInput.value)||80,t=parseFloat(bpmSlider.value)||80;targetBpmLabel.textContent=o+'→'+t+' BPM';let p=parseInt(pitchSlider.value);pitchLabel.textContent=(p>0?'+'+p:p)+' st';}
+bpmSlider.oninput=()=>{atualizaLabels();updatePlayback();};pitchSlider.oninput=()=>{atualizaLabels();updatePlayback();};origBpmInput.oninput=()=>{atualizaLabels();updatePlayback();};
+function updatePlayback(){if(!grainPlayer)return;grainPlayer.playbackRate=parseFloat(bpmSlider.value)/parseFloat(origBpmInput.value||80);grainPlayer.detune=parseInt(pitchSlider.value)*100;if(isClick)Tone.Transport.bpm.value=parseFloat(bpmSlider.value);}
+async function loadFile(file,meta=null){fileName.textContent=file.name;status.textContent='⏳ Decodificando...';await Tone.start();let buf=await file.arrayBuffer();let ctx=Tone.getContext().rawContext;audioBuffer=await ctx.decodeAudioData(buf.slice(0));if(grainPlayer){grainPlayer.stop();grainPlayer.dispose();}grainPlayer=new Tone.GrainPlayer(audioBuffer);grainPlayer.loop=isLoop;grainPlayer.grainSize=0.12;grainPlayer.overlap=0.06;grainPlayer.toDestination();if(meta){origBpmInput.value=meta.orig;bpmSlider.value=meta.target;pitchSlider.value=meta.pitch;nomeRitmo.value=meta.nome;}atualizaLabels();updatePlayback();status.textContent='✅ '+file.name;openDB().then(db=>{let tx=db.transaction(['loops','meta'],'readwrite');tx.objectStore('loops').put(file,'temp_last');tx.objectStore('meta').put({orig:origBpmInput.value,target:bpmSlider.value,pitch:pitchSlider.value,nome:file.name},'temp_last');});listar();}
+file.onchange=e=>{if(e.target.files[0])loadFile(e.target.files[0]);};
+function openDB(){return new Promise((res,rej)=>{let r=indexedDB.open('taki_vs_pro',2);r.onupgradeneeded=e=>{let db=e.target.result;if(!db.objectStoreNames.contains('loops'))db.createObjectStore('loops');if(!db.objectStoreNames.contains('meta'))db.createObjectStore('meta');};r.onsuccess=()=>res(r.result);r.onerror=rej;});}
+async function salvarNoIDB(file,meta,key){let db=await openDB();let tx=db.transaction(['loops','meta'],'readwrite');tx.objectStore('loops').put(file,key);tx.objectStore('meta').put(meta,key);tx.oncomplete=()=>{status.textContent='💾 Salvo: '+meta.nome;listar();};}
+window.salvarRitmo=async function(){if(!audioBuffer)return alert('Carrega loop!');let nome=nomeRitmo.value.trim();if(!nome)nome=prompt('Nome?','Meu ritmo '+bpmSlider.value+'BPM');if(!nome)return;let f=file.files[0];if(!f){let db=await openDB();let tx=db.transaction('loops','readonly');let req=tx.objectStore('loops').get('temp_last');req.onsuccess=async()=>{if(req.result)await salvarNoIDB(req.result,{orig:origBpmInput.value,target:bpmSlider.value,pitch:pitchSlider.value,nome},nome);};return;}await salvarNoIDB(f,{orig:origBpmInput.value,target:bpmSlider.value,pitch:pitchSlider.value,nome},nome);};
+window.togglePlay=async function(){await Tone.start();if(!grainPlayer)return alert('Carrega loop!');if(isPlaying){grainPlayer.stop();Tone.Transport.stop();isPlaying=false;playBtn.textContent='▶️ PLAY';}else{grainPlayer.start();if(isClick){Tone.Transport.bpm.value=parseFloat(bpmSlider.value);Tone.Transport.start();}isPlaying=true;playBtn.textContent='⏸️ STOP';}};
+window.toggleLoop=function(){isLoop=!isLoop;if(grainPlayer)grainPlayer.loop=isLoop;loopBtn.textContent=isLoop?'🔁 LOOP ON':'🔁 LOOP OFF';};
+window.toggleClick=function(){isClick=!isClick;clickState.textContent=isClick?'ON':'OFF';if(isClick){if(clickLoop)clickLoop.dispose();let s=new Tone.MembraneSynth().toDestination();clickLoop=new Tone.Loop(t=>{s.triggerAttackRelease('C2','8n',t);},'4n').start(0);Tone.Transport.bpm.value=parseFloat(bpmSlider.value);if(isPlaying)Tone.Transport.start();}else{Tone.Transport.stop();if(clickLoop)clickLoop.dispose();}};
+async function listar(){let db=await openDB();let tx=db.transaction(['loops','meta'],'readonly');let keysReq=tx.objectStore('loops').getAllKeys();keysReq.onsuccess=()=>{let keys=keysReq.result.filter(k=>k!='temp_last');countLoops.textContent=keys.length+' itens';listaLoops.innerHTML='';keys.forEach(k=>{let mReq=tx.objectStore('meta').get(k);mReq.onsuccess=()=>{let m=mReq.result||{nome:k};let el=document.createElement('div');el.className='loop-item';el.innerHTML=`<div><div style="font-weight:800">${m.nome}</div><div style="font-size:11px;opacity:.7">${m.orig}→${m.target} BPM</div></div><div style="display:flex;gap:6px"><button class="btn btn-dark" style="padding:8px">Usar</button><button class="btn btn-dark" style="padding:8px">🗑️</button></div>`;el.children[1].children[0].onclick=()=>carregarSalvo(k);el.children[1].children[1].onclick=()=>deletar(k);listaLoops.appendChild(el);};});};}
+window.carregarSalvo=async function(k){let db=await openDB();let tx=db.transaction(['loops','meta'],'readonly');let f=tx.objectStore('loops').get(k);let m=tx.objectStore('meta').get(k);f.onsuccess=()=>{m.onsuccess=()=>{if(f.result)loadFile(f.result,m.result);}};};
+window.deletar=async function(k){if(!confirm('Deletar '+k+'?'))return;let db=await openDB();let tx=db.transaction(['loops','meta'],'readwrite');tx.objectStore('loops').delete(k);tx.objectStore('meta').delete(k);tx.oncomplete=()=>listar();};
+function audioBufferToWavBlob(ab){let numCh=ab.numberOfChannels,sr=ab.sampleRate,data=[];for(let c=0;c<numCh;c++)data.push(ab.getChannelData(c));let len=data[0].length*numCh*2,buf=new ArrayBuffer(44+len),view=new DataView(buf);function ws(o,s){for(let i=0;i<s.length;i++)view.setUint8(o+i,s.charCodeAt(i));}ws(0,'RIFF');view.setUint32(4,36+len,true);ws(8,'WAVE');ws(12,'fmt ');view.setUint32(16,16,true);view.setUint16(20,1,true);view.setUint16(22,numCh,true);view.setUint32(24,sr,true);view.setUint32(28,sr*numCh*2,true);view.setUint16(32,numCh*2,true);view.setUint16(34,16,true);ws(36,'data');view.setUint32(40,len,true);let off=44;for(let i=0;i<data[0].length;i++)for(let c=0;c<numCh;c++){let s=Math.max(-1,Math.min(1,data[c][i]));view.setInt16(off,s<0?s*0x8000:s*0x7FFF,true);off+=2;}return new Blob([buf],{type:'audio/wav'});}
+function bufferToWav(b,r){let len=Math.floor(b.length/r),oCtx=new OfflineAudioContext(b.numberOfChannels,len,b.sampleRate),src=oCtx.createBufferSource();src.buffer=b;src.playbackRate.value=r;src.connect(oCtx.destination);src.start();return oCtx.startRendering();}
+window.exportarWAV=async function(){if(!audioBuffer)return alert('Carrega loop!');status.textContent='⏳ WAV...';let ratio=parseFloat(bpmSlider.value)/parseFloat(origBpmInput.value||80),pr=Math.pow(2,parseInt(pitchSlider.value)/12),fin=ratio*pr,ren=await bufferToWav(audioBuffer,fin),blob=audioBufferToWavBlob(ren),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=(nomeRitmo.value||'taki')+'_'+bpmSlider.value+'BPM.wav';a.click();status.textContent='✅ WAV';};
+window.exportarMP3=async function(){if(!audioBuffer)return alert('Carrega loop!');status.textContent='⏳ MP3...';let ratio=parseFloat(bpmSlider.value)/parseFloat(origBpmInput.value||80),pr=Math.pow(2,parseInt(pitchSlider.value)/12),fin=ratio*pr,ren=await bufferToWav(audioBuffer,fin),wavData=ren.getChannelData(0),enc=new lamejs.Mp3Encoder(1,ren.sampleRate,128),samples=new Int16Array(wavData.length);for(let i=0;i<wavData.length;i++){let s=Math.max(-1,Math.min(1,wavData[i]));samples[i]=s<0?s*0x8000:s*0x7FFF;}let mp3Data=[],block=1152;for(let i=0;i<samples.length;i+=block){let ch=samples.subarray(i,i+block),mp3buf=enc.encodeBuffer(ch);if(mp3buf.length>0)mp3Data.push(mp3buf);}let end=enc.flush();if(end.length>0)mp3Data.push(end);let blob=new Blob(mp3Data,{type:'audio/mp3'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=(nomeRitmo.value||'taki')+'_'+bpmSlider.value+'BPM.mp3';a.click();status.textContent='✅ MP3';};
+window.exportarBKP=async function(){let db=await openDB(),tx=db.transaction(['loops','meta'],'readonly'),lReq=tx.objectStore('loops').getAll(),mReq=tx.objectStore('meta').getAll(),kReq=tx.objectStore('loops').getAllKeys();Promise.all([new Promise(r=>{lReq.onsuccess=()=>r(lReq.result)}),new Promise(r=>{mReq.onsuccess=()=>r(mReq.result)}),new Promise(r=>{kReq.onsuccess=()=>r(kReq.result)})]).then(async([loops,metas,keys])=>{let files=[];for(let i=0;i<keys.length;i++){if(keys[i]=='temp_last')continue;let buf=await loops[i].arrayBuffer(),b64=await new Promise(res=>{let reader=new FileReader();reader.onload=()=>res(reader.result.split(',')[1]);reader.readAsDataURL(new Blob([buf]));});files.push({key:keys[i],meta:metas[i],data:b64,type:loops[i].type});}let json=JSON.stringify({app:'TAKI VS PRO',date:new Date().toISOString(),files}),blob=new Blob([json],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='backup_taki_'+new Date().toISOString().slice(0,10)+'.taki';a.click();});};
+bkpFile.onchange=async e=>{let file=e.target.files[0];if(!file)return;let txt=await file.text(),json=JSON.parse(txt),db=await openDB(),tx=db.transaction(['loops','meta'],'readwrite');for(let f of json.files){let bin=atob(f.data),bytes=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);let blob=new Blob([bytes],{type:f.type||'audio/mpeg'});tx.objectStore('loops').put(blob,f.key);tx.objectStore('meta').put(f.meta,f.key);}tx.oncomplete=()=>{alert('BKP: '+json.files.length+' ritmos');listar();};};
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;btnInstall.style.display='block';});
+window.instalar=async function(){if(!deferredPrompt)return alert('No Chrome: 3 pontinhos > Instalar app');deferredPrompt.prompt();let {outcome}=await deferredPrompt.userChoice;if(outcome=='accepted')btnInstall.style.display='none';deferredPrompt=null;};
+if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js');}
+atualizaLabels();listar();
 </script>
 </body>
 </html>
