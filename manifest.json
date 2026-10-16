@@ -3,7 +3,13 @@
   "short_name": "TAKI VS",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#0a0a0a",
-  "theme_color": "#ffcc00",
-  "icons": [{"src": "https://cdn-icons-png.flaticon.com/512/138/138817.png","sizes": "512x512","type": "image/png"}]
+  "background_color": "#0f0f0f",
+  "theme_color": "#0f0f0f",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
 }
